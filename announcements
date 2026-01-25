@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>房務部公告 - 寒居酒店</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(122, 153, 172, 0.3);
+      border-radius: 50%;
+      border-top-color: #7A99AC;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .announcement-enter {
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white">
+  
+  <!-- Header -->
+  <div class="bg-[#7A99AC] text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </a>
+        <div>
+          <h1 class="text-xl font-bold">部門公告</h1>
+          <p class="text-xs text-blue-100">Announcements</p>
+        </div>
+      </div>
+      <button onclick="refreshData()" class="p-2 hover:bg-white/20 rounded-lg transition-colors" title="重新整理">
+        <svg id="refreshIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    
+    <!-- Filter Tabs -->
+    <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <button onclick="filterAnnouncements('all')" id="filter-all" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all">
+        全部
+      </button>
+      <button onclick="filterAnnouncements('urgent')" id="filter-urgent" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all">
+        緊急通知
+      </button>
+      <button onclick="filterAnnouncements('normal')" id="filter-normal" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all">
+        一般公告
+      </button>
+      <button onclick="filterAnnouncements('info')" id="filter-info" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all">
+        資訊公告
+      </button>
+    </div>
+
+    <!-- Pinned Announcements -->
+    <div class="mb-6" id="pinnedSection">
+      <div class="flex items-center gap-2 mb-3 px-2">
+        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+        </svg>
+        <h2 class="font-bold text-[#7A99AC]">置頂項目</h2>
+      </div>
+      
+      <div id="pinnedContainer">
+        <div class="flex justify-center items-center py-8">
+          <div class="loading"></div>
+          <span class="ml-2 text-[#7A99AC]">載入中...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Announcements -->
+    <div>
+      <div class="flex items-center justify-between mb-3 px-2">
+        <h2 class="font-bold text-[#7A99AC]">所有公告</h2>
+        <span id="announcementCount" class="text-xs text-[#7A99AC]">共 0 則</span>
+      </div>
+      
+      <div id="announcementsContainer">
+        <div class="flex justify-center items-center py-8">
+          <div class="loading"></div>
+          <span class="ml-2 text-[#7A99AC]">載入中...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API 網址
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwLkn1PmmPro3TGaB0YAFlf3tXntdMerrcst57B-zK_V5Iq0LsXUn72EpBoJwjJAQpJ/exec';
+    
+    let allAnnouncements = [];
+    let currentFilter = 'all';
+
+    // 返回上一頁
+    function goBack() {
+      window.history.back();
+    }
+
+    // 載入置頂項目
+    async function loadPinnedItems() {
+      try {
+        const response = await fetch(`${API_URL}?action=getPinned`);
+        const items = await response.json();
+        const container = document.getElementById('pinnedContainer');
+        
+        if (items.length === 0) {
+          container.innerHTML = '<p class="text-center text-gray-400 py-4">目前沒有置頂項目</p>';
+          return;
+        }
+        
+        container.innerHTML = items.map(item => `
+          <div class="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-shadow announcement-enter">
+            <div class="flex justify-between items-start mb-1">
+              <h3 class="font-semibold text-[#7A99AC]">${item.emoji} ${item.title}</h3>
+              <span class="text-xs text-[#7A99AC]">${item.time}</span>
+            </div>
+            <p class="text-[#4a4540] text-sm">${item.content}</p>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('載入置頂項目失敗:', error);
+        document.getElementById('pinnedContainer').innerHTML = 
+          '<p class="text-center text-red-500 py-4">載入失敗</p>';
+      }
+    }
+
+    // 載入所有公告
+    async function loadAnnouncements() {
+      try {
+        const response = await fetch(`${API_URL}?action=getAnnouncements`);
+        const announcements = await response.json();
+        allAnnouncements = announcements;
+        
+        displayAnnouncements(announcements);
+      } catch (error) {
+        console.error('載入公告失敗:', error);
+        document.getElementById('announcementsContainer').innerHTML = 
+          '<p class="text-center text-red-500 py-4">載入失敗</p>';
+      }
+    }
+
+    // 顯示公告
+    function displayAnnouncements(announcements) {
+      const container = document.getElementById('announcementsContainer');
+      const countElement = document.getElementById('announcementCount');
+      
+      if (announcements.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 py-8">目前沒有公告</p>';
+        countElement.textContent = '共 0 則';
+        return;
+      }
+
+      countElement.textContent = `共 ${announcements.length} 則`;
+      
+      container.innerHTML = announcements.map(announcement => {
+        const typeConfig = {
+          urgent: { 
+            bg: 'bg-red-100', 
+            color: 'text-red-600',
+            badge: 'bg-red-500',
+            label: '緊急'
+          },
+          normal: { 
+            bg: 'bg-blue-100', 
+            color: 'text-blue-600',
+            badge: 'bg-blue-500',
+            label: '一般'
+          },
+          info: { 
+            bg: 'bg-gray-100', 
+            color: 'text-gray-600',
+            badge: 'bg-gray-500',
+            label: '資訊'
+          }
+        };
+        const config = typeConfig[announcement.type] || typeConfig.info;
+        
+        return `
+          <div class="bg-white rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-all border border-[#e5e7eb] announcement-enter">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.bg}">
+                <svg class="w-5 h-5 ${config.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="px-2 py-0.5 ${config.badge} text-white text-xs rounded-full">${config.label}</span>
+                  <span class="text-xs text-[#7A99AC]">${announcement.time}</span>
+                </div>
+                <h3 class="font-semibold text-[#7A99AC] text-base mb-2">${announcement.title}</h3>
+                <p class="text-[#4a4540] text-sm mb-3 leading-relaxed">${announcement.content}</p>
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#7A99AC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span class="text-xs text-[#7A99AC]">${announcement.author}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 篩選公告
+    function filterAnnouncements(type) {
+      currentFilter = type;
+      
+      // 更新按鈕樣式
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`filter-${type}`).classList.add('active');
+      
+      // 篩選資料
+      let filtered = allAnnouncements;
+      if (type !== 'all') {
+        filtered = allAnnouncements.filter(a => a.type === type);
+      }
+      
+      displayAnnouncements(filtered);
+    }
+
+    // 重新整理
+    async function refreshData() {
+      const icon = document.getElementById('refreshIcon');
+      icon.style.animation = 'spin 1s ease-in-out infinite';
+      
+      await Promise.all([
+        loadPinnedItems(),
+        loadAnnouncements()
+      ]);
+      
+      setTimeout(() => {
+        icon.style.animation = '';
+      }, 1000);
+    }
+
+    // 頁面載入
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPinnedItems();
+      loadAnnouncements();
+      
+      // 設定篩選按鈕樣式
+      const style = document.createElement('style');
+      style.textContent = `
+        .filter-btn {
+          background: #f3f4f6;
+          color: #6b7280;
+        }
+        .filter-btn:hover {
+          background: #e5e7eb;
+        }
+        .filter-btn.active {
+          background: #7A99AC;
+          color: white;
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
+</body>
+</html>
