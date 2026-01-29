@@ -35,7 +35,7 @@
         transform: translateY(0);
       }
     }
-  </style>
+     </style>
 </head>
 <body class="min-h-screen bg-white">
   
@@ -76,7 +76,7 @@
 
   <script>
     // ⚠️ 請將此處替換成你的 Google Apps Script 網址
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyn-jDONkxzMTtV6mSD2A94aQUoky55mi39XaHggGQip74kF3GcsIw4VMLkEKqAXRZhpQ/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx58RPtfipWLlfA5k9tQ1TbTXVz0Ptj_YlCxx9XXzGiqrnnLo8G6EDGFeIUVPkePxTTHw/exec';
     
     // 載入班表
     async function loadSchedule() {
@@ -123,34 +123,36 @@
           };
           const config = typeConfig[schedule.type] || typeConfig.info;
           
+          // 處理內容和超連結
+          
           return `
-            <div class="bg-white rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-all border border-[#e5e7eb] announcement-enter">
-              <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.bg}">
-                  <svg class="w-5 h-5 ${config.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="px-2 py-0.5 ${config.badge} text-white text-xs rounded-full">${config.label}</span>
-                    <span class="text-xs text-[#7A99AC]">${schedule.time}</span>
-                  </div>
-                  <h3 class="font-semibold text-[#7A99AC] text-base mb-2">${schedule.title}</h3>
-                  <p class="text-[#4a4540] text-sm mb-3 leading-relaxed">${schedule.content}</p>
-                  <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-[#7A99AC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                      </svg>
-                      <span class="text-xs text-[#7A99AC]">${schedule.author}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    <div class="bg-white rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-all border border-[#e5e7eb] announcement-enter">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.bg}">
+          <svg class="w-5 h-5 ${config.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 ${config.badge} text-white text-xs rounded-full">${config.label}</span>
+            <span class="text-xs text-[#7A99AC]">${schedule.time}</span>
+          </div>
+          <h3 class="font-semibold text-[#7A99AC] text-base mb-2">${schedule.title}</h3>
+          <p class="text-[#4a4540] text-sm mb-3 leading-relaxed">${schedule.content}</p>
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#7A99AC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              <span class="text-xs text-[#7A99AC]">${schedule.author}</span>
             </div>
-          `;
-        }).join('');
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}).join('');
       } catch (error) {
         console.error('載入班表失敗:', error);
         document.getElementById('scheduleContainer').innerHTML = 
