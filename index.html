@@ -146,7 +146,7 @@
 
   <script>
     // ⚠️ 重要：請將下面的網址替換成你的 Google Apps Script 網址
-    const API_URL = 'https://script.google.com/macros/s/AKfycbz8iAhmsNvW4HI0CRj_u1PpdQHSRNCDftwKsd-svmsCCHtIgUren3mELrTNaLA42cHJZw/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbweUquPeu23-2ymw9uD1TrJDJOV1b74j53WyXnfrAngIUkFLmdX0v_7ws_DXGhDDoWVNw/exec';
 
     // 載入置頂項目
     async function loadPinnedItems() {
@@ -188,7 +188,10 @@
           return;
         }
         
-        container.innerHTML = announcements.map(announcement => {
+        // 只顯示最新 3 則公告
+        const latestAnnouncements = announcements.slice(0, 3);
+        
+        container.innerHTML = latestAnnouncements.map(announcement => {
           const typeConfig = {
             urgent: { bg: 'bg-red-100', color: 'text-red-600' },
             normal: { bg: 'bg-blue-100', color: 'text-blue-600' },
@@ -211,7 +214,7 @@
                   </div>
                   <p class="text-[#4a4540] text-sm mb-2">${announcement.content}</p>
                   <div class="flex items-center justify-between">
-                    <span class="text-xs text-[#7A99AC]">發布者：${announcement.author}</span>
+                    <span class="text-xs text-[#7A99AC]">發布者:${announcement.author}</span>
                        </div>
                 </div>
               </div>
@@ -221,7 +224,7 @@
       } catch (error) {
         console.error('載入公告失敗:', error);
         document.getElementById('announcementsContainer').innerHTML = 
-          '<p class="text-center text-red-500 py-4">載入失敗，請檢查 API 網址設定</p>';
+          '<p class="text-center text-red-500 py-4">載入失敗,請檢查 API 網址設定</p>';
       }
     }
 
@@ -247,5 +250,4 @@
     });
   </script>
 </body>
-
 </html>
